@@ -73,7 +73,7 @@ export default function QuestBoardPage() {
         <header className="flex flex-col sm:flex-row justify-between items-start sm:items-end mb-8 lg:mb-12 gap-4">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <ScrollText className="text-[#6C5CE7] w-7 h-7 sm:w-8 sm:h-8" size={32} />
+              <ScrollText className="text-[#6C5CE7] w-7 h-7 sm:w-8 sm:h-8 shrink-0" size={32} />
               <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#0F1035] uppercase tracking-tighter">Quest Board</h1>
             </div>
             <p className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-[0.2em]">Review submissions and grant XP</p>
@@ -98,7 +98,7 @@ export default function QuestBoardPage() {
               className="bg-transparent outline-none ml-3 sm:ml-4 text-xs sm:text-sm w-full font-bold text-slate-700 placeholder-slate-300" 
             />
           </div>
-          <button className="bg-white p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-100 text-slate-400 hover:text-[#6C5CE7] transition-all shadow-sm shrink-0">
+          <button className="bg-white p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-100 text-slate-400 hover:text-[#6C5CE7] transition-all shadow-sm shrink-0 active:scale-95 flex items-center justify-center">
             <Filter size={18} />
           </button>
         </div>
@@ -107,11 +107,11 @@ export default function QuestBoardPage() {
         <div className="space-y-4 sm:space-y-6">
           {filteredSubmissions.length === 0 ? (
             <div className="bg-white rounded-[24px] sm:rounded-[40px] p-10 sm:p-20 text-center border-2 border-dashed border-slate-200">
-              <Sparkles className="mx-auto text-amber-400 mb-4 sm:mb-6" size={40} />
+              <Sparkles className="mx-auto text-amber-400 mb-4 sm:mb-6 animate-pulse" size={40} />
               <h3 className="text-lg sm:text-xl font-black text-slate-800 uppercase">
                 {searchQuery ? "No Results Found" : "All Quests Completed!"}
               </h3>
-              <p className="text-slate-400 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest mt-2">
+              <p className="text-slate-400 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest mt-2 px-2">
                 {searchQuery ? "Try refining your search query" : "You've cleared the board, Master."}
               </p>
             </div>
@@ -120,13 +120,15 @@ export default function QuestBoardPage() {
               <div key={sub.id} className="bg-white rounded-[24px] sm:rounded-[32px] p-5 sm:p-8 border border-slate-100 shadow-sm hover:shadow-xl transition-all group flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                 
                 {/* Left Side: Info */}
-                <div className="flex items-start sm:items-center gap-4 sm:gap-8">
+                <div className="flex items-start sm:items-center gap-4 sm:gap-8 min-w-0 flex-1">
                   <div className="w-12 h-12 sm:w-16 sm:h-16 bg-[#F4F7FE] rounded-xl sm:rounded-2xl flex items-center justify-center text-[#6C5CE7] group-hover:bg-[#6C5CE7] group-hover:text-white transition-all shrink-0">
                     <ScrollText size={24} className="sm:w-7 sm:h-7" />
                   </div>
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                      <h3 className="text-lg sm:text-xl font-black text-[#0F1035] uppercase tracking-tight leading-none">{sub.quests?.title}</h3>
+                      <h3 className="text-base sm:text-xl font-black text-[#0F1035] uppercase tracking-tight leading-snug break-words max-w-full">
+                        {sub.quests?.title}
+                      </h3>
                       <span className="px-2 py-0.5 bg-amber-100 text-amber-600 text-[8px] font-black uppercase rounded-md tracking-tighter shrink-0">
                         +{sub.quests?.reward_xp} XP
                       </span>
@@ -136,37 +138,43 @@ export default function QuestBoardPage() {
                         <Clock size={11} /> {new Date(sub.created_at).toLocaleDateString()}
                       </p>
                       <span className="w-1 h-1 bg-slate-200 rounded-full hidden sm:inline-block"></span>
-                      <p className="text-[9px] sm:text-[10px] font-black text-[#6C5CE7] uppercase tracking-widest">{sub.profiles?.username}</p>
+                      <p className="text-[9px] sm:text-[10px] font-black text-[#6C5CE7] uppercase tracking-widest break-all">
+                        {sub.profiles?.username}
+                      </p>
                       <span className="w-1 h-1 bg-slate-200 rounded-full hidden sm:inline-block"></span>
-                      <p className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-tighter">Party: {sub.groups?.name}</p>
+                      <p className="text-[9px] sm:text-[10px] font-bold text-slate-500 uppercase tracking-tighter truncate">
+                        Party: {sub.groups?.name}
+                      </p>
                     </div>
                   </div>
                 </div>
 
                 {/* Right Side: Actions */}
-                <div className="flex items-center justify-between lg:justify-end gap-3 border-t lg:border-t-0 pt-4 lg:pt-0">
+                <div className="flex items-center justify-between lg:justify-end gap-3 border-t lg:border-t-0 pt-4 lg:pt-0 mt-1 lg:mt-0">
                   {sub.content_url && (
                     <a 
                       href={sub.content_url} 
                       target="_blank" 
                       rel="noreferrer"
-                      className="p-3 sm:p-4 rounded-xl sm:rounded-2xl text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all flex items-center gap-2"
+                      className="p-2.5 sm:p-4 rounded-xl sm:rounded-2xl text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all flex items-center gap-1.5 active:scale-95"
                     >
                       <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest">Review Code</span>
                       <ExternalLink size={14} />
                     </a>
                   )}
                   
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 ml-auto">
                     <button 
                       onClick={() => handleStatusUpdate(sub.id, 'rejected')}
-                      className="p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-rose-100 text-rose-500 hover:bg-rose-500 hover:text-white transition-all shadow-sm active:scale-90"
+                      className="p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-rose-100 text-rose-500 hover:bg-rose-500 hover:text-white transition-all shadow-sm active:scale-95"
+                      title="Reject Submission"
                     >
                       <XCircle size={20} />
                     </button>
                     <button 
                       onClick={() => handleStatusUpdate(sub.id, 'approved')}
-                      className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-[#6C5CE7] text-white hover:bg-[#5A4AD1] transition-all shadow-lg shadow-purple-200 active:scale-90"
+                      className="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-[#6C5CE7] text-white hover:bg-[#5A4AD1] transition-all shadow-lg shadow-purple-200 active:scale-95"
+                      title="Approve & Grant XP"
                     >
                       <CheckCircle2 size={20} />
                     </button>
