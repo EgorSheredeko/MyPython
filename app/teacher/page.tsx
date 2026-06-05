@@ -22,16 +22,21 @@ export default function TeacherDashboard() {
       try {
         setLoading(true);
 
-        // Тянем данные по имени "Egor" (как в твоей базе)
-        // Если логин через username, это единственный способ без стандартной сессии
+        // ДИНАМИЧЕСКИ ЧИТАЕМ ИМЯ ПОЛЬЗОВАТЕЛЯ ИЗ КУК
+        const cookies = document.cookie.split('; ');
+        const usernameCookie = cookies.find(row => row.startsWith('username='));
+        // Если кука есть — декодируем её, если нет — ставим 'Egor' как фоллбек
+        const savedUsername = usernameCookie ? decodeURIComponent(usernameCookie.split('=')[1]) : 'Egor';
+
+        // Запрашиваем профиль по динамическому имени
         const { data: prof, error: profError } = await supabase
           .from('profiles')
           .select('username, level, experience, rank, coins')
-          .eq('username', 'Egor') 
+          .eq('username', savedUsername) 
           .single();
 
         if (profError) {
-          console.error("Ошибка профиля:", profError.message);
+          console.error("Ошибка загрузки профиля:", profError.message);
         } else {
           setProfile(prof);
         }
@@ -48,7 +53,7 @@ export default function TeacherDashboard() {
         if (scheduleRes.data) setEvents(scheduleRes.data);
 
       } catch (error) {
-        console.error("Ошибка загрузки:", error);
+        console.error("Ошибка загрузки данных дашборда:", error);
       } finally {
         setLoading(false);
       }
@@ -197,7 +202,7 @@ export default function TeacherDashboard() {
   );
 }
 
-// Вспомогательные компоненты (Статистика, Карточки, Строки лога)
+// Вспомогательные компоненты
 function StatItem({ label, value, icon, color = "text-white" }: any) {
   return (
     <div className="flex flex-col">

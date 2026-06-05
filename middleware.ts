@@ -46,9 +46,20 @@ export async function middleware(request: NextRequest) {
   const userRole = request.cookies.get('user_role')?.value;
   const { pathname } = request.nextUrl;
 
-  // Список рангов для панели управления (учителя/админы)
-  const teacherRanks = ['Absolute System Creator', 'admin', 'teacher', 'Senior Python Developer', 'ISUS'];
-  const isTeacher = teacherRanks.includes(userRole || '');
+  // ВСЕ РАНГИ СТРОГО МАЛЕНЬКИМИ БУКВАМИ ДЛЯ НАДЕЖНОСТИ
+  const teacherRanks = [
+    'absolute system creator', 
+    'admin', 
+    'teacher', 
+    'senior python developer', 
+    'isus'
+  ];
+
+  // Безопасно очищаем куку от пробелов и переводим в нижний регистр
+  const userRoleNormalized = userRole ? decodeURIComponent(userRole).trim().toLowerCase() : '';
+
+  // Теперь проверка регистра не боится!
+  const isTeacher = teacherRanks.includes(userRoleNormalized);
 
   // Если пользователь не залогинен и пытается зайти на защищенные страницы
   if (!isLoggedIn && pathname !== '/login') {
@@ -65,7 +76,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/student', request.url));
   }
 
-  // Защита раздела ученика от учителей (чтобы ты всегда попадал в админку)
+  // Защита раздела ученика от учителей
   if (pathname.startsWith('/student') && isTeacher) {
     return NextResponse.redirect(new URL('/teacher', request.url));
   }

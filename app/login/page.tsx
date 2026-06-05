@@ -5,6 +5,7 @@ import { createClient } from '@/utils/supabase/client';
 import { LogIn, Loader2, ShieldCheck, GraduationCap, Users, Zap } from 'lucide-react';
 
 export default function LoginPage() {
+  const router = useRouter();
   const supabase = createClient();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -34,33 +35,25 @@ export default function LoginPage() {
         return;
       }
 
-      // СОХРАНЯЕМ КУКИ ДЛЯ MIDDLEWARE И ДИНАМИЧЕСКИХ СТРАНИЦ
-      document.cookie = `user_role=${encodeURIComponent(profile.rank)}; path=/; max-age=86400; SameSite=Lax`;
-      document.cookie = `is_logged_in=true; path=/; max-age=86400; SameSite=Lax`;
+      // Приводим роль к нижнему регистру, убирая лишние пробелы. Если пусто — ставим 'student'
+      const userRoleNormalized = profile.role ? profile.role.trim().toLowerCase() : 'student';
+
+      // Строгий список ролей, которые имеют доступ к учительской панели
+      const teacherRoles = ['teacher', 'admin'];
+      const isTeacher = teacherRoles.includes(userRoleNormalized);
+
+      // СОХРАНЯЕМ ДАННЫЕ В КУКИ ДЛЯ МИДЛВАРА И СЕРВЕРА
       document.cookie = `username=${encodeURIComponent(profile.username)}; path=/; max-age=86400; SameSite=Lax`;
+      document.cookie = `is_logged_in=true; path=/; max-age=86400; SameSite=Lax`;
+      
+      // Пишем в куку СТРОГО роль (никаких рангов здесь быть не должно)
+      document.cookie = `user_role=${encodeURIComponent(userRoleNormalized)}; path=/; max-age=86400; SameSite=Lax`;
 
-      // НЕУБИВАЕМАЯ ЛОГИКА ОПРЕДЕЛЕНИЯ РОЛИ (Регистронезависимая)
-      // Все проверочные ранги пишем строго МАЛЕНЬКИМИ буквами
-      const teacherRanks = [
-        'isus', 
-        'admin', 
-        'teacher', 
-        'senior python developer', 
-        'absolute system creator'
-      ];
-
-      // Очищаем данные из базы от случайных пробелов и переводим в нижний регистр
-      const userRankNormalized = profile.rank ? profile.rank.trim().toLowerCase() : '';
-      const userRoleNormalized = profile.role ? profile.role.trim().toLowerCase() : '';
-
-      // Проверяем, совпадает ли нормализованный ранг или роль администратора
-      const isTeacher = teacherRanks.includes(userRankNormalized) || userRoleNormalized === 'admin';
-
-      // ПЕРЕНАПРАВЛЕНИЕ С УЧЕТОМ РОЛИ
+      // Направляем на нужную страницу на основе РОЛИ
       if (isTeacher) {
-        window.location.href = '/teacher';
+        window.location.replace('/teacher');
       } else {
-        window.location.href = '/student';
+        window.location.replace('/student');
       }
 
     } catch (err) {
@@ -72,13 +65,10 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-[#F4F7FE] flex items-center justify-center p-4 sm:p-6 font-sans text-slate-800">
-      {/* Контейнер карточки */}
       <div className="bg-white w-full max-w-[440px] rounded-[32px] sm:rounded-[48px] p-6 sm:p-10 shadow-2xl border border-slate-100 relative overflow-hidden transition-all duration-300">
         
-        {/* Декоративный элемент на фоне */}
         <div className="absolute -top-10 -right-10 w-24 h-24 sm:w-32 sm:h-32 bg-purple-50 rounded-full blur-3xl pointer-events-none" />
         
-        {/* Хедер формы */}
         <div className="text-center mb-8 sm:mb-10 relative z-10">
           <div className="w-16 h-16 sm:w-20 sm:h-20 bg-[#6C5CE7] rounded-2xl sm:rounded-3xl flex items-center justify-center mx-auto mb-4 sm:mb-6 shadow-lg shadow-purple-200 transition-all">
             <LogIn className="text-white w-7 h-7 sm:w-8 sm:h-8" />
@@ -92,7 +82,6 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* Форма авторизации */}
         <form onSubmit={handleLogin} className="space-y-4 sm:space-y-5 relative z-10">
           {errorMsg && (
             <div className="bg-red-50 border border-red-100 text-red-500 text-[10px] sm:text-[11px] font-black py-3 px-4 rounded-xl text-center uppercase tracking-wider">
@@ -137,7 +126,6 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {/* Адаптивный Футер */}
         <div className="mt-8 pt-6 border-t border-slate-50 grid grid-cols-3 gap-2 sm:flex sm:justify-center sm:gap-6 opacity-40">
            <div className="flex items-center justify-center sm:justify-start gap-1.5 text-slate-500 text-[8px] sm:text-[9px] font-black uppercase">
               <ShieldCheck size={12} className="sm:w-3.5 sm:h-3.5" /> Admin

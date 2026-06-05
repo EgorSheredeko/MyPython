@@ -9,6 +9,7 @@ import { createClient } from '@/utils/supabase/client';
 export default function QuestBoardPage() {
   const supabase = createClient();
   const [submissions, setSubmissions] = useState<any[]>([]);
+  const [searchQuery, setSearchQuery] = useState(''); // Состояние для строки поиска
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -48,6 +49,16 @@ export default function QuestBoardPage() {
     }
   };
 
+  // ЛОГИКА ЖИВОГО ПОИСКА
+  const filteredSubmissions = submissions.filter(sub => {
+    const questTitle = sub.quests?.title?.toLowerCase() || '';
+    const studentName = sub.profiles?.username?.toLowerCase() || '';
+    const query = searchQuery.toLowerCase().trim();
+    
+    // Ищем совпадения либо в названии квеста, либо в имени студента
+    return questTitle.includes(query) || studentName.includes(query);
+  });
+
   if (loading) return (
     <div className="flex items-center justify-center min-h-screen bg-[#F4F7FE] w-full lg:pl-[280px]">
       <Loader2 className="animate-spin text-[#6C5CE7]" size={40} />
@@ -70,7 +81,8 @@ export default function QuestBoardPage() {
 
           <div className="w-full sm:w-auto bg-white px-5 py-3.5 sm:py-4 rounded-xl sm:rounded-2xl shadow-sm border border-slate-100 flex items-center justify-between sm:justify-end gap-3 shrink-0">
             <span className="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-widest">Pending Verification:</span>
-            <span className="text-lg sm:text-xl font-black text-[#6C5CE7]">{submissions.length}</span>
+            {/* Показываем количество именно отфильтрованных элементов */}
+            <span className="text-lg sm:text-xl font-black text-[#6C5CE7]">{filteredSubmissions.length}</span>
           </div>
         </header>
 
@@ -78,7 +90,13 @@ export default function QuestBoardPage() {
         <div className="flex gap-3 sm:gap-4 mb-6 sm:mb-8">
           <div className="flex-1 bg-white rounded-xl sm:rounded-2xl px-4 sm:px-6 py-3.5 sm:py-4 flex items-center border border-slate-100 shadow-sm focus-within:ring-2 ring-purple-100 transition-all">
             <Search className="text-slate-300 shrink-0" size={18} />
-            <input type="text" placeholder="Search by student or quest name..." className="bg-transparent outline-none ml-3 sm:ml-4 text-xs sm:text-sm w-full font-bold" />
+            <input 
+              type="text" 
+              placeholder="Search by student or quest name..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)} // Привязываем ввод к стейту
+              className="bg-transparent outline-none ml-3 sm:ml-4 text-xs sm:text-sm w-full font-bold text-slate-700 placeholder-slate-300" 
+            />
           </div>
           <button className="bg-white p-3.5 sm:p-4 rounded-xl sm:rounded-2xl border border-slate-100 text-slate-400 hover:text-[#6C5CE7] transition-all shadow-sm shrink-0">
             <Filter size={18} />
@@ -87,14 +105,18 @@ export default function QuestBoardPage() {
 
         {/* QUEST LIST */}
         <div className="space-y-4 sm:space-y-6">
-          {submissions.length === 0 ? (
+          {filteredSubmissions.length === 0 ? (
             <div className="bg-white rounded-[24px] sm:rounded-[40px] p-10 sm:p-20 text-center border-2 border-dashed border-slate-200">
               <Sparkles className="mx-auto text-amber-400 mb-4 sm:mb-6" size={40} />
-              <h3 className="text-lg sm:text-xl font-black text-slate-800 uppercase">All Quests Completed!</h3>
-              <p className="text-slate-400 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest mt-2">You've cleared the board, Master.</p>
+              <h3 className="text-lg sm:text-xl font-black text-slate-800 uppercase">
+                {searchQuery ? "No Results Found" : "All Quests Completed!"}
+              </h3>
+              <p className="text-slate-400 text-[9px] sm:text-[10px] font-bold uppercase tracking-widest mt-2">
+                {searchQuery ? "Try refining your search query" : "You've cleared the board, Master."}
+              </p>
             </div>
           ) : (
-            submissions.map((sub) => (
+            filteredSubmissions.map((sub) => (
               <div key={sub.id} className="bg-white rounded-[24px] sm:rounded-[32px] p-5 sm:p-8 border border-slate-100 shadow-sm hover:shadow-xl transition-all group flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                 
                 {/* Left Side: Info */}
@@ -123,15 +145,17 @@ export default function QuestBoardPage() {
 
                 {/* Right Side: Actions */}
                 <div className="flex items-center justify-between lg:justify-end gap-3 border-t lg:border-t-0 pt-4 lg:pt-0">
-                  <a 
-                    href={sub.content_url} 
-                    target="_blank" 
-                    rel="noreferrer"
-                    className="p-3 sm:p-4 rounded-xl sm:rounded-2xl text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all flex items-center gap-2"
-                  >
-                    <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest">Review Code</span>
-                    <ExternalLink size={14} />
-                  </a>
+                  {sub.content_url && (
+                    <a 
+                      href={sub.content_url} 
+                      target="_blank" 
+                      rel="noreferrer"
+                      className="p-3 sm:p-4 rounded-xl sm:rounded-2xl text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-all flex items-center gap-2"
+                    >
+                      <span className="text-[9px] sm:text-[10px] font-black uppercase tracking-widest">Review Code</span>
+                      <ExternalLink size={14} />
+                    </a>
+                  )}
                   
                   <div className="flex gap-2">
                     <button 
